@@ -3,6 +3,7 @@ import { deleteApp, getApp, getApps, initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { collection, getDocs, getFirestore, query, where, doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Swal from "sweetalert2";
 
 const firebaseConfig = {
@@ -31,6 +32,9 @@ export const auth = getAuth(firebaseApp)
 //Inicializar Firestore
 const db = getFirestore(firebaseApp);
 const productosCollection = collection(db, 'productos');
+
+// Inicializar Firebase Storage
+const storage = getStorage(firebaseApp);
 
 // Función para cargar los productos activados desde Firestore y mostrarlos en la página
 export async function cargarProductosActivados() {
@@ -419,5 +423,86 @@ export async function updateProductQuantity(productId, newQuantity) {
     } catch (error) {
         console.error('Error al modificar la cantidad del producto:', error);
         return false;
+    }
+}
+
+//Agregar Productos:
+
+// Función para agregar un nuevo producto
+// Función para agregar un nuevo producto
+export async function addProduct(producto) {
+    try {
+        // Generar un nuevo ID para el producto
+        const id = await generateProductId();
+
+        // Guardar la imagen en Firebase Storage y obtener la URL
+        const imageUrl = await uploadImageAndGetUrl(producto.imagen, id);
+
+        // Guardar el producto en Firestore
+        await setDoc(doc(db, 'productos', id), { // Cambiar doc por setDoc y agregar id al path
+            id,
+            nombre: producto.nombre,
+            cantidad: producto.cantidad,
+            precio: producto.precio,
+            imagen: imageUrl,
+            estado: producto.estado
+        });
+
+        console.log('Producto agregado exitosamente.');
+        return id; // Devuelve el ID del producto creado
+    } catch (error) {
+        console.error('Error al agregar el producto:', error);
+        throw new Error('Error al agregar el producto. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+async function generateProductId() {
+    try {
+        const productsRef = collection(db, 'productos'); // Cambiar doc por collection
+        const snapshot = await getDocs(productsRef); // Cambiar doc por collection y get por getDocs
+        const numProducts = snapshot.docs.length;
+        return 'producto' + (numProducts + 1);
+    } catch (error) {
+        console.error('Error al generar el ID del producto:', error);
+        throw new Error('Error al generar el ID del producto. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Función para subir la imagen a Firebase Storage y obtener la URL
+async function uploadImageAndGetUrl(imageFile, productId) {
+    try {
+        const storageRef = ref(storage, `product_images/${productId}_producto.png`);
+        const uploadTask = uploadBytesResumable(storageRef, imageFile);
+
+        // Mostrar la barra de carga
+        Swal.fire({
+            title: 'Subiendo imagen...',
+            html: '<div class="progress" style="margin-top: 20px;"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div></div>',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        });
+
+        // Actualizar la barra de carga según el progreso
+        uploadTask.on('state_changed', snapshot => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressBar.textContent = Math.round(progress) + '%';
+        });
+
+        // Esperar a que se complete la carga
+        await uploadTask;
+
+        // Ocultar la barra de carga
+        Swal.close();
+
+        // Obtener la URL de descarga de la imagen
+        const imageUrl = await getDownloadURL(storageRef);
+        return imageUrl;
+    } catch (error) {
+        console.error('Error al subir la imagen:', error);
+        throw new Error('Error al subir la imagen. Por favor, inténtalo de nuevo más tarde.');
     }
 }

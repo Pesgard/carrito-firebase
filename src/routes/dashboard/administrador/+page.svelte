@@ -3,7 +3,7 @@
 	import { authStore } from '../../../stores/authStore';
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { BuildingStorefront, Envelope, Icon, PresentationChartBar } from 'svelte-hero-icons';
-	import Inventario from './Inventario.svelte'
+	import Inventario from './producto/Inventario.svelte'
 
 	let email = '';
 	let admin;

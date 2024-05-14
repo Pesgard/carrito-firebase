@@ -9,6 +9,7 @@
 		cargarProductos
 	} from '$lib/firebase';
 	import Swal from 'sweetalert2';
+	import NuevoProducto from './NuevoProducto.svelte';
 
 	let inputDemo = '';
 	let selected = null;
@@ -92,35 +93,42 @@
 		});
 	}
 </script>
-
-<div class="w-full">
-	<input
-		class="input variant-ringed-primary"
-		type="search"
-		name="demo"
-		bind:value={inputDemo}
-		placeholder="Buscar Productos"
-	/>
-
-	<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
-		<Autocomplete bind:input={inputDemo} options={productos} on:selection={onProductSelection} />
+<div class="grid grid-cols-3">
+	<div class="flex flex-col w-full items-center">
+			<NuevoProducto/>
 	</div>
-</div>
 
-{#if selectedProduct}
+	<span class="divider-vertical h-screen" />
+
+	<div class="w-fit">
+		Modificar Productos
+		<input
+			class="input variant-ringed-primary"
+			type="search"
+			name="demo"
+			bind:value={inputDemo}
+			placeholder="Buscar Productos"
+		/>
+	
+		<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
+			<Autocomplete bind:input={inputDemo} options={productos} on:selection={onProductSelection} />
+		</div>
+	
+		
+	{#if selectedProduct}
 	<div class="card w-full max-w-sm p-4 mt-4">
 		<h3>{selectedProduct.nombre}</h3>
 		<p>Estado: {selectedProduct.estado ? 'Activado' : 'Desactivado'}</p>
 		<p>Precio: ${selectedProduct.precio}</p>
 		<p>Cantidad Disponible: {selectedProduct.cantidad}</p>
-
+	
 		<hr />
 		<div class="mt-4 flex-col">
 			<h3>Opciones de producto</h3>
 			<button on:click={toggleEstadoProducto} class="btn variant-soft-primary">
 				{selectedProduct.estado ? 'Desactivar' : 'Activar'} Producto
 			</button>
-
+	
 			<div class=" m-4 flex flex-row">
 				<input
 					type="number"
@@ -129,18 +137,28 @@
 					step="0.01"
 					bind:value={selectedProduct.precio}
 				/>
-				<button class="btn variant-filled-primary text-surface-50" on:click={() => modificarPrecio(selectedProduct.precio)}>Modificar Precio</button>
-			</div>
-
-			<div class="m-4 flex flex-row">
-				<input type="number" class="input" min="0" step="1" bind:value={selectedProduct.cantidad} />
-				<button class="btn variant-filled-primary text-surface-50" on:click={() => modificarCantidad(selectedProduct.cantidad)}
-					>Modificar Cantidad</button
+				<button
+					class="btn variant-filled-primary text-surface-50"
+					on:click={() => modificarPrecio(selectedProduct.precio)}>Modificar Precio</button
 				>
 			</div>
-
+	
+			<div class="m-4 flex flex-row">
+				<input type="number" class="input" min="0" step="1" bind:value={selectedProduct.cantidad} />
+				<button
+					class="btn variant-filled-primary text-surface-50"
+					on:click={() => modificarCantidad(selectedProduct.cantidad)}>Modificar Cantidad</button
+				>
+			</div>
+	
 			<!-- Botón para limpiar input y reiniciar selectedProduct -->
 			<button class="btn variant-outline-tertiary" on:click={limpiarInput}>Limpiar</button>
 		</div>
 	</div>
-{/if}
+	{/if}
+	
+	</div>
+	
+
+</div>
+
