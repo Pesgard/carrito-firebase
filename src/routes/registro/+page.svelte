@@ -18,7 +18,7 @@
 		}
 
 		if ($authStore.currentUser) {
-			window.location.href = '/dashbaord/productos';
+			window.location.href = '/dashboard/productos';
 		}
 	}
 </script>

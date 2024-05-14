@@ -33,6 +33,7 @@
   "type": "module",
   "dependencies": {
     "@floating-ui/dom": "1.6.5",
+    "chart.js": "^4.4.2",
     "firebase": "^10.11.1",
     "svelte-hero-icons": "^5.1.0",
     "sweetalert2": "^11.11.0"

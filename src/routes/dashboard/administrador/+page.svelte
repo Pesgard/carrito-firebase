@@ -4,6 +4,7 @@
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { BuildingStorefront, Envelope, Icon, PresentationChartBar } from 'svelte-hero-icons';
 	import Inventario from './producto/Inventario.svelte'
+	import Graficas from './graficas/Graficas.svelte';
 
 	let email = '';
 	let admin;
@@ -48,7 +49,7 @@
 		<!-- Contenido del panel de productos -->
 		<Inventario/>
 		{:else if tabSet === 1}
-			(tab panel 2 contents)
+		<Graficas/>
 		{:else if tabSet === 2}
 			(tab panel 3 contents)
 		{/if}

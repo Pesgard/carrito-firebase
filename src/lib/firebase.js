@@ -429,7 +429,6 @@ export async function updateProductQuantity(productId, newQuantity) {
 //Agregar Productos:
 
 // Función para agregar un nuevo producto
-// Función para agregar un nuevo producto
 export async function addProduct(producto) {
     try {
         // Generar un nuevo ID para el producto
@@ -504,5 +503,211 @@ async function uploadImageAndGetUrl(imageFile, productId) {
     } catch (error) {
         console.error('Error al subir la imagen:', error);
         throw new Error('Error al subir la imagen. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+//Graficas ==================
+
+//Obtener ventas de la semana
+export async function getSalesByDateRange(startDate, endDate) {
+    try {
+        const salesRef = collection(db, 'compras');
+        const q = query(salesRef, where('timestamp', '>=', startDate), where('timestamp', '<=', endDate));
+        const snapshot = await getDocs(q);
+
+        const sales = [];
+        snapshot.forEach(doc => {
+            const saleData = doc.data();
+            sales.push({
+                id: doc.id,
+                timestamp: saleData.timestamp,
+                userId: saleData.userId,
+                products: saleData.Products
+            });
+        });
+
+        return sales;
+    } catch (error) {
+        console.error('Error al obtener las ventas por fecha:', error);
+        throw new Error('Error al obtener las ventas por fecha. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Función para obtener los productos vendidos por cantidad
+export async function getProductsSoldByQuantity() {
+    try {
+        const salesRef = collection(db, 'compras');
+        const snapshot = await getDocs(salesRef);
+
+        const productsSold = new Map();
+
+        snapshot.forEach(doc => {
+            const saleData = doc.data();
+            saleData.products.forEach(product => {
+                const { name, quantity } = product;
+                if (productsSold.has(name)) {
+                    productsSold.set(name, productsSold.get(name) + quantity);
+                } else {
+                    productsSold.set(name, quantity);
+                }
+            });
+        });
+
+        // Convertir el mapa en un array de objetos para facilitar su manejo
+        const productsSoldArray = Array.from(productsSold, ([name, quantity]) => ({ name, quantity }));
+
+        // Ordenar los productos por cantidad vendida (de mayor a menor)
+        productsSoldArray.sort((a, b) => b.quantity - a.quantity);
+
+        return productsSoldArray;
+    } catch (error) {
+        console.error('Error al obtener los productos vendidos por cantidad:', error);
+        throw new Error('Error al obtener los productos vendidos por cantidad. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+
+// Función para obtener los productos que generan más ingresos
+export async function getProductsByRevenue() {
+    try {
+        const salesRef = collection(db, 'compras');
+        const snapshot = await getDocs(salesRef);
+
+        const productsRevenue = new Map();
+
+        snapshot.forEach(doc => {
+            const saleData = doc.data();
+            saleData.products.forEach(product => {
+                const { name, quantity, price } = product;
+                const totalRevenue = quantity * price;
+                if (productsRevenue.has(name)) {
+                    productsRevenue.set(name, productsRevenue.get(name) + totalRevenue);
+                } else {
+                    productsRevenue.set(name, totalRevenue);
+                }
+            });
+        });
+
+        // Convertir el mapa en un array de objetos para facilitar su manejo
+        const productsRevenueArray = Array.from(productsRevenue, ([name, revenue]) => ({ name, revenue }));
+
+        // Ordenar los productos por ingresos totales (de mayor a menor)
+        productsRevenueArray.sort((a, b) => b.revenue - a.revenue);
+
+        return productsRevenueArray;
+    } catch (error) {
+        console.error('Error al obtener los productos por ingresos:', error);
+        throw new Error('Error al obtener los productos por ingresos. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+
+// Función para obtener los clientes que compran más productos
+export async function getTopBuyingClients() {
+    try {
+        const salesRef = collection(db, 'compras');
+        const snapshot = await getDocs(salesRef);
+
+        // Objeto para almacenar la información del cliente
+        const clientData = {};
+
+        // Iterar sobre las compras y agrupar por cliente
+        snapshot.forEach(async doc => {
+            const { userId, products } = doc.data();
+            if (!clientData[userId]) {
+                clientData[userId] = { userId, totalProducts: 0 };
+            }
+            // Sumar la cantidad de productos comprados por cada cliente
+            clientData[userId].totalProducts += products.length;
+        });
+
+        // Convertir el objeto de datos del cliente a un array
+        const topClients = Object.values(clientData);
+
+        // Ordenar los clientes por la cantidad de productos comprados (de mayor a menor)
+        topClients.sort((a, b) => b.totalProducts - a.totalProducts);
+
+        // Obtener información detallada de los usuarios basada en sus UID
+        const clientsInfo = await getUsersInfo(topClients);
+
+        // Combinar la información de cantidad de productos comprados con la información de los usuarios
+        const mergedData = topClients.map(client => {
+            const userInfo = clientsInfo.find(info => info.userId === client.userId);
+            return {
+                ...client,
+                ...userInfo
+            };
+        });
+
+        return mergedData;
+    } catch (error) {
+        console.error('Error al obtener los clientes que compran más productos:', error);
+        throw new Error('Error al obtener los clientes que compran más productos. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Función para obtener la información de los usuarios basada en sus UID
+async function getUsersInfo(userClient) {
+    try {
+        const usersInfo = [];
+
+        // Recorre cada cliente en topClients
+        for (const client of userClient) {
+            const { userId } = client;
+
+            // Obtiene la información del usuario con el UID actual
+            const userRef = doc(db, 'users', userId);
+            const userSnapshot = await getDoc(userRef);
+
+            // Si el usuario existe, agrega su información al array usersInfo
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.data();
+                usersInfo.push({
+                    userId,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    email: userData.email,
+                });
+            } else {
+                console.error(`No se encontró información para el usuario con UID: ${userId}`);
+            }
+        }
+
+        return usersInfo;
+    } catch (error) {
+        console.error('Error al obtener la información de los usuarios:', error);
+        throw new Error('Error al obtener la información de los usuarios. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Función para obtener los clientes que generan más ingresos
+export async function getTopRevenueClients() {
+    try {
+        const salesRef = collection(db, 'compras');
+        const snapshot = await getDocs(salesRef);
+
+        // Objeto para almacenar la información del cliente
+        const clientData = {};
+
+        // Iterar sobre las compras y agrupar por cliente
+        snapshot.forEach(doc => {
+            const { userId, total } = doc.data();
+            if (!clientData[userId]) {
+                clientData[userId] = { userId, totalRevenue: 0 };
+            }
+            // Sumar el total de ingresos generados por cada cliente
+            clientData[userId].totalRevenue += total;
+        });
+
+        // Convertir el objeto de datos del cliente a un array
+        const topClients = Object.values(clientData);
+
+        // Ordenar los clientes por el total de ingresos generados (de mayor a menor)
+        topClients.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+        return topClients;
+    } catch (error) {
+        console.error('Error al obtener los clientes que generan más ingresos:', error);
+        throw new Error('Error al obtener los clientes que generan más ingresos. Por favor, inténtalo de nuevo más tarde.');
     }
 }
