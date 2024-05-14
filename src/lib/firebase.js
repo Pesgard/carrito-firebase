@@ -300,6 +300,10 @@ export async function createPurchase() {
 
                 // Verificar si el carrito tiene productos
                 if (cartData.products && Array.isArray(cartData.products) && cartData.products.length > 0) {
+
+                    const totalRevenue = cartData.products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+
+
                     // Crear un nuevo documento para la compra en la colección "compras"
                     const purchaseDocRef = doc(collection(db, 'compras'));
 
@@ -310,7 +314,9 @@ export async function createPurchase() {
                     const purchaseData = {
                         userId: userId,
                         products: cartData.products,
-                        timestamp: currentDate
+                        timestamp: currentDate,
+                        totalRevenue: totalRevenue
+
                     };
 
                     // Guardar la información de la compra en Firestore
@@ -690,13 +696,13 @@ export async function getTopRevenueClients() {
         const clientData = {};
 
         // Iterar sobre las compras y agrupar por cliente
-        snapshot.forEach(doc => {
-            const { userId, total } = doc.data();
+        snapshot.forEach(async doc => {
+            const { userId, totalRevenue } = doc.data();
             if (!clientData[userId]) {
                 clientData[userId] = { userId, totalRevenue: 0 };
             }
             // Sumar el total de ingresos generados por cada cliente
-            clientData[userId].totalRevenue += total;
+            clientData[userId].totalRevenue += totalRevenue;
         });
 
         // Convertir el objeto de datos del cliente a un array
@@ -705,9 +711,42 @@ export async function getTopRevenueClients() {
         // Ordenar los clientes por el total de ingresos generados (de mayor a menor)
         topClients.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-        return topClients;
+        // Obtener información detallada de los usuarios basada en sus UID
+        const clientsInfo = await getUsersInfo(topClients);
+
+        // Combinar la información de total de ingresos generados con la información de los usuarios
+        const mergedData = topClients.map(client => {
+            const userInfo = clientsInfo.find(info => info.userId === client.userId);
+            return {
+                ...client,
+                ...userInfo
+            };
+        });
+
+        return mergedData;
     } catch (error) {
         console.error('Error al obtener los clientes que generan más ingresos:', error);
         throw new Error('Error al obtener los clientes que generan más ingresos. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+
+// Función para obtener el historial de compras de un usuario
+export async function getUserPurchaseHistory(userId) {
+    try {
+        const purchaseRef = collection(db, 'compras');
+        const querySnapshot = await getDocs(query(purchaseRef, where('userId', '==', userId)));
+        const purchases = [];
+
+        querySnapshot.forEach(doc => {
+            purchases.push({ id: doc.id, ...doc.data() });
+        });
+
+        console.log("purchases", purchases)
+
+        return purchases;
+    } catch (error) {
+        console.error('Error al obtener el historial de compras del usuario:', error);
+        throw new Error('Error al obtener el historial de compras del usuario. Por favor, inténtalo de nuevo más tarde.');
     }
 }

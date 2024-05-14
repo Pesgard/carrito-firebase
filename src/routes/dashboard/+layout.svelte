@@ -58,6 +58,11 @@
 						<a
 							class="btn bg-transparent underline hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
+							href="/dashboard/historial">Historial</a
+						>
+						<a
+							class="btn bg-transparent underline hover:bg-slate-300"
+							data-sveltekit-preload-data="hover"
 							href="/dashboard/contactanos">Contactanos</a
 						>
 						<a

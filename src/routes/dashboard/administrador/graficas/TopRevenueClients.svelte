@@ -9,6 +9,8 @@
         try {
             // Obtener los clientes que generan más ingresos
             topClients = await getTopRevenueClients();
+            
+            console.log("top revenues",topClients)
 
             // Configurar los datos para la gráfica
             const labels = topClients.map(client => `${client.firstName} ${client.lastName}`);
@@ -57,7 +59,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {#each topClients as client}
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">{client.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{client.firstName} {client.lastName}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{client.email}</td>
                         <td class="px-6 py-4 whitespace-nowrap">${client.totalRevenue.toFixed(2)}</td>
                     </tr>
