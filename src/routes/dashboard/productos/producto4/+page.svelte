@@ -1,6 +1,6 @@
 <script>
 	import Swal from 'sweetalert2';
-	import { getProductDetailsByName, addToCart } from '$lib/firebase';
+	import { getProductDetailsByName, addToCart, getProductDetailsById } from '$lib/firebase';
 	import { onMount } from 'svelte';
 	import { Icon, Plus, Minus, ShoppingCart } from 'svelte-hero-icons';
 
@@ -9,7 +9,8 @@
 	let productimage;
 	let productDetails;
 	let productCount = 0;
-	let productName = 'Juicy Lemon Candleaf®';
+	let productName;
+	let pruductID = 'producto4';
 
 	function buyProduct() {
 		if (productCount <= productQuantity) {
@@ -40,8 +41,10 @@
 	}
 
 	onMount(async () => {
-		productDetails = await getProductDetailsByName(productName);
+		//productDetails = await getProductDetailsByName(productName);
+		productDetails = await getProductDetailsById(pruductID);
 		//console.log(productDetails);
+		productName = productDetails.nombre;
 		productimage = productDetails.imagen;
 		productPrice = productDetails.precio;
 		productQuantity = productDetails.cantidad;

@@ -1,6 +1,6 @@
 <script>
 	import Swal from 'sweetalert2';
-	import { getProductDetailsByName, addToCart } from '$lib/firebase';
+	import { getProductDetailsByName, addToCart, getProductDetailsById } from '$lib/firebase';
 	import { onMount } from 'svelte';
 	import { Icon, Plus, Minus, ShoppingCart } from 'svelte-hero-icons';
 
@@ -9,12 +9,20 @@
 	let productimage;
 	let productDetails;
 	let productCount = 0;
-	let productName = 'Spiced Mint Candleaf®';
+	let productName;
+	let pruductID = 'producto1';
 
 	function buyProduct() {
 		if (productCount <= productQuantity) {
 			let productTotal = productPrice * productCount;
-			addToCart(productName, productCount, productimage, productTotal, productQuantity, productPrice);
+			addToCart(
+				productName,
+				productCount,
+				productimage,
+				productTotal,
+				productQuantity,
+				productPrice
+			);
 			// Muestra un mensaje de éxito con SweetAlert2
 			Swal.fire({
 				icon: 'success',
@@ -23,18 +31,20 @@
 				confirmButtonText: 'OK'
 			});
 		} else {
-            Swal.fire({
-            icon: 'error',
-            title: '¡Cantidad incorrecta!',
-            text: 'Has agregado mas producto de los que hay disponibles',
-            confirmButtonText: 'OK'
-        });
-        }
+			Swal.fire({
+				icon: 'error',
+				title: '¡Cantidad incorrecta!',
+				text: 'Has agregado mas producto de los que hay disponibles',
+				confirmButtonText: 'OK'
+			});
+		}
 	}
 
 	onMount(async () => {
-		productDetails = await getProductDetailsByName(productName);
+		//productDetails = await getProductDetailsByName(productName);
+		productDetails = await getProductDetailsById(pruductID);
 		//console.log(productDetails);
+		productName = productDetails.nombre;
 		productimage = productDetails.imagen;
 		productPrice = productDetails.precio;
 		productQuantity = productDetails.cantidad;

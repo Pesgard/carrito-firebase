@@ -18,19 +18,34 @@
 				text: 'Se a iniciado sesion correctamente',
 				confirmButtonText: 'OK'
 			});
+
+			if ($authStore.currentUser) {
+				window.location.href = '/dashboard/productos';
+			}
 		} catch (err) {
 			console.log(err);
+			let errorMessage = '';
+			if (err.code === 'auth/invalid-email' || err.code === 'auth/wrong-password') {
+				errorMessage = 'Credenciales Invalidas intente nuevamente';
+			} else if (err.code === 'auth/user-not-found') {
+				errorMessage = 'No existe una cuenta con este correo electrónico';
+			} else if (err.code === 'auth/user-disabled') {
+				errorMessage = 'Esta cuenta ha sido deshabilitada';
+			} else if (err.message === 'Email not verified') {
+				errorMessage =
+					'El correo electrónico no ha sido verificado, se te a enviado un correo de verificacion a tu correo electronico';
+				await authHandlers.verifyEmail();
+			} else {
+				errorMessage = 'Ocurrió un error inesperado. Por favor, inténtelo de nuevo';
+			}
+
 			// Mostrar notificación de error con SweetAlert2
 			await Swal.fire({
 				icon: 'error',
 				title: 'Error al iniciar sesion',
-				text: 'Credenciales Invalidas intente nuevamente',
+				text: errorMessage,
 				confirmButtonText: 'OK'
 			});
-		}
-
-		if ($authStore.currentUser) {
-			window.location.href = '/dashboard/productos';
 		}
 	}
 </script>

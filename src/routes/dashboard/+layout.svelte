@@ -5,6 +5,7 @@
 	import { Icon, User, ShoppingCart } from 'svelte-hero-icons';
 	import { toggleCart, createPurchase } from '../../lib/firebase';
 
+	let verified;
 	let email;
 	let admin;
 	let showUserInfo = false;
@@ -29,14 +30,19 @@
 	authStore.subscribe((curr) => {
 		console.log('CURR', curr);
 		email = curr?.currentUser?.email;
+		verified = curr?.currentUser?.emailVerified;
 
-		if (email === 'admin@example.com') {
+		if (verified === false) {
+			window.location.href = '/';
+		}
+		
+		if (email === 'testcarritoalan@gmail.com') {
 			admin = true;
-			console.log(admin);
+			console.log('admin', admin)
 		} else {
 			admin = false;
-			console.log(admin);
 		}
+
 	});
 </script>
 

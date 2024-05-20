@@ -17,7 +17,7 @@
 		email = curr?.currentUser?.email;
 
 		if (!curr.isLoading) {
-			if (email === 'admin@example.com') {
+			if (email === 'testcarritoalan@gmail.com') {
 				admin = true;
 			} else {
 				window.location.href = '/dashboard/productos'

@@ -1,5 +1,5 @@
 
-import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateEmail, updatePassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateEmail, updatePassword, sendEmailVerification } from "firebase/auth";
 import { writable } from "svelte/store";
 import { auth } from "../lib/firebase";
 import { createUser } from "../lib/firebase";
@@ -12,10 +12,15 @@ export const authStore = writable({
 
 export const authHandlers = {
     login: async (email, password) => {
-        await signInWithEmailAndPassword(auth, email, password)
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        if (!user.emailVerified) {
+            throw new Error('Email not verified');
+        }
     },
     signup: async (email, password, firstName, lastName) => {
         await createUser(email, password, firstName, lastName)
+        window.location.href = '/'
     },
     logout: async () => {
         await signOut(auth)
@@ -40,5 +45,8 @@ export const authHandlers = {
     },
     updatePassword: async (password) => {
         await updatePassword(auth.currentUser, password)
+    },
+    verifyEmail: async () => {
+        await sendEmailVerification(auth.currentUser)
     }
 }

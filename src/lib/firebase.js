@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { deleteApp, getApp, getApps, initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, } from 'firebase/auth'
 import { collection, getDocs, getFirestore, query, where, doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Swal from "sweetalert2";
@@ -60,6 +60,23 @@ export async function cargarProductos() {
     }
 }
 
+//funcion para cargar los detalles de un producto por su id
+export async function getProductDetailsById(productId) {
+    try {
+        // Consulta el producto por su ID
+        const docRef = doc(db, 'productos', productId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() };
+        } else {
+            console.log(`No se encontró ningún producto con el ID "${productId}"`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al cargar los detalles del producto:", error);
+        return null;
+    }
+}
 
 // Función para cargar los detalles de un producto por su nombre
 export async function getProductDetailsByName(productName) {
@@ -244,7 +261,10 @@ export function updateCart(cartItems) {
 export async function createUser(email, password, firstName, lastName) {
     try {
         // Crea el usuario en Firebase Authentication
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        // Enviar correo de verificación
+        await sendEmailVerification(userCredential.user);
+
         const user = userCredential.user;
 
         // Guarda la información del usuario en Firestore
@@ -263,12 +283,12 @@ export async function createUser(email, password, firstName, lastName) {
         await Swal.fire({
             icon: 'success',
             title: '¡Registro exitoso!',
-            text: 'Usuario registrado exitosamente',
+            text: 'Se ha enviado un correo de verifiacion a tu correo electronico. Por favor, verifica tu cuenta para iniciar sesión.',
             confirmButtonText: 'OK'
         });
 
-        // Redirecciona al usuario a la página de inicio
-        window.location.href = '/inicio.html';
+        window.location.href = '/'
+
     } catch (error) {
         // Muestra un mensaje de error con SweetAlert2
         await Swal.fire({
@@ -428,6 +448,20 @@ export async function updateProductQuantity(productId, newQuantity) {
         return true;
     } catch (error) {
         console.error('Error al modificar la cantidad del producto:', error);
+        return false;
+    }
+}
+
+//funcion para modificar la imagen de un producto
+export async function updateProductImage(productId, newImage) {
+    try {
+        const productRef = doc(db, 'productos', productId);
+        const imageUrl = await uploadImageAndGetUrl(newImage, productId);
+        await updateDoc(productRef, { imagen: imageUrl });
+        console.log(`Imagen del producto ${productId} actualizada`);
+        return true;
+    } catch (error) {
+        console.error('Error al modificar la imagen del producto:', error);
         return false;
     }
 }
@@ -748,5 +782,87 @@ export async function getUserPurchaseHistory(userId) {
     } catch (error) {
         console.error('Error al obtener el historial de compras del usuario:', error);
         throw new Error('Error al obtener el historial de compras del usuario. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Funcion para crear una conversacion en firebase dentro de la coleccion 'mensajes', donde el id de la conversacion es el id del usuario que la creo, y dentro del documento llevara el campo leido: false y tambien tendra un map donde dentro se guardaran los textos
+export async function createConversation(userId, userEmail) {
+    try {
+        const conversationRef = doc(db, 'mensajes', userId);
+        const conversationSnapshot = await getDoc(conversationRef);
+
+        if (!conversationSnapshot.exists()) {
+            const conversationData = {
+                correo: userEmail,
+                leido: false,
+                textos: {}
+            };
+            await setDoc(conversationRef, conversationData);
+        }
+    } catch (error) {
+        console.error('Error al crear la conversación:', error);
+    }
+}
+
+// Funcion para obtener los mensajes de una conversacion en firebase
+export async function getConversationMessages(userId) {
+    try {
+        const conversationRef = doc(db, 'mensajes', userId);
+        const conversationSnapshot = await getDoc(conversationRef);
+        const conversationData = conversationSnapshot.data();
+
+        if (conversationData) {
+            return conversationData.textos;
+        } else {
+            return {};
+        }
+    } catch (error) {
+        console.error('Error al obtener los mensajes de la conversación:', error);
+        throw new Error('Error al obtener los mensajes de la conversación. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+// Funcion para enviar un mensaje a una conversacion en firebase
+export async function sendMessageToConversation(userId, message) {
+    try {
+        const conversationRef = doc(db, 'mensajes', userId);
+        const conversationSnapshot = await getDoc(conversationRef);
+        const conversationData = conversationSnapshot.data();
+
+        if (conversationData) {
+            const newTexts = {
+                ...conversationData.textos,
+                [Date.now()]: {
+                    mensaje: message,
+                    date: new Date().toISOString()
+                }
+            };
+            await updateDoc(conversationRef, { textos: newTexts });
+        }
+    } catch (error) {
+        console.error('Error al enviar el mensaje:', error);
+        throw new Error('Error al enviar el mensaje. Por favor, inténtalo de nuevo más tarde.');
+    }
+}
+
+//Funcion para mostrar todas las conversaciones
+export async function getAllConversations() {
+    try {
+        const conversationsRef = collection(db, 'mensajes');
+        const snapshot = await getDocs(conversationsRef);
+        const conversations = [];
+
+        snapshot.forEach(doc => {
+            const conversation = {
+                id: doc.id,
+                data: doc.data()
+            };
+            conversations.push(conversation);
+        });
+
+        return conversations;
+    } catch (error) {
+        console.error('Error al obtener todas las conversaciones:', error);
+        throw new Error('Error al obtener todas las conversaciones. Por favor, inténtalo de nuevo más tarde.');
     }
 }

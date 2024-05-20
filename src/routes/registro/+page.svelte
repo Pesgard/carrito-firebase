@@ -17,9 +17,9 @@
 			console.log(err);
 		}
 
-		if ($authStore.currentUser) {
-			window.location.href = '/dashboard/productos';
-		}
+		// if ($authStore.currentUser) {
+		// 	window.location.href = '/dashboard/productos';
+		// }
 	}
 </script>
 

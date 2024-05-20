@@ -10,7 +10,7 @@
 	let productDetails;
 	let productCount = 0;
 	let productName;
-	let pruductID = 'producto3';
+	let pruductID = 'producto6';
 
 	function buyProduct() {
 		if (productCount <= productQuantity) {
