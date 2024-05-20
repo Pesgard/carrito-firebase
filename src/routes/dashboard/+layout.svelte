@@ -49,7 +49,7 @@
 <div class="flex flex-col w-full">
 	{#if $authStore.currentUser}
 		<div class="flex flex-col w-full">
-			<AppBar background="bg-white">
+			<AppBar background=" bg-white">
 				<svelte:fragment slot="lead">
 					<img alt="Logotipo" src={Logo} width="30" />
 				</svelte:fragment>
@@ -57,22 +57,22 @@
 				<svelte:fragment>
 					<div class=" w-full flex flex-row items-center justify-center">
 						<a
-							class="btn bg-transparent underline hover:bg-slate-300"
+							class="btn !bg-transparent text-surface-600 underline hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/productos">Explorar</a
 						>
 						<a
-							class="btn bg-transparent underline hover:bg-slate-300"
+							class="btn !bg-transparent text-surface-600 underline hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/historial">Historial</a
 						>
 						<a
-							class="btn bg-transparent underline hover:bg-slate-300"
+							class="btn bg-transparent text-surface-600 underline hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/contactanos">Contactanos</a
 						>
 						<a
-							class="btn bg-transparent underline hover:bg-slate-300"
+							class="btn bg-transparent text-surface-600 underline hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/configuracion">Configuracion</a
 						>
