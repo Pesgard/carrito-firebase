@@ -50,37 +50,37 @@
 	}
 </script>
 
-<div class="bg-white w-screen h-screen">
+<div class="bg-gray-200 w-screen h-screen">
 	<AppBar background="bg-white">
 		<svelte:fragment slot="lead">
 			<img alt="Logotipo" src={Logo} width="30" />
 		</svelte:fragment>
 		<svelte:fragment slot="trail">
-			<p class="text-md">No tienes cuenta?</p>
+			<p class="text-md">¿No tienes cuenta?</p>
 			<a
 				href="/registro"
-				class="btn variant-ringed-surface rounded-md btn-sm"
-				data-sveltekit-preload-data="hover">Registrate</a
+				class="btn variant-filled-primary text-white rounded-md btn-sm"
+				data-sveltekit-preload-data="hover">Regístrate</a
 			>
 		</svelte:fragment>
 	</AppBar>
 
 	<div class="flex flex-col w-full items-center justify-center">
 		<div class="flex flex-col justify-center items-center">
-			<h2 class="text-2xl">Iniciar Sesion</h2>
-			<p class="mt-2">INGRESA LOS DATOS DE TU CUENTA PARA INGRESAR</p>
+			<h2 class="text-6xl mt-10">Iniciar Sesión</h2>
+			<p class="mt-2">Ingresa los datos de tu cuenta para acceder</p>
 
 			<input
 				class="input bg-transparent rounded-none mt-4"
 				type="email"
-				placeholder="Correo Electronico"
+				placeholder="Correo Electrónico"
 				required
 				bind:value={email}
 			/>
 			<input
 				class="input bg-transparent rounded-none mt-4 mb-4"
 				type="password"
-				placeholder="password"
+				placeholder="Contraseña"
 				required
 				bind:value={clave}
 			/>
@@ -89,7 +89,7 @@
 				class="btn variant-filled-primary w-full text-white rounded-md"
 				on:click={handleSubmit}
 			>
-				<span>Iniciar Sesion</span>
+				<span>Iniciar Sesión</span>
 				<Icon src={ArrowRightEndOnRectangle} class="h-4 w-fit" />
 			</button>
 		</div>

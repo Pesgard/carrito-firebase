@@ -30,7 +30,7 @@ if (!getApps().length) {
 export const auth = getAuth(firebaseApp)
 
 //Inicializar Firestore
-const db = getFirestore(firebaseApp);
+export const db = getFirestore(firebaseApp);
 const productosCollection = collection(db, 'productos');
 
 // Inicializar Firebase Storage
@@ -100,7 +100,7 @@ export async function getProductDetailsByName(productName) {
 }
 
 // Función para mostrar el carrito
-export async function toggleCart(cartItems) {
+export async function toggleCart(cartItems, nombreContenedor) {
 
     const user = auth.currentUser;
     if (user) {
@@ -113,7 +113,7 @@ export async function toggleCart(cartItems) {
             const cartItemsData = cartSnapshot.data().products || [];
             cartItems = [...cartItemsData];
             console.log("cart items", cartItemsData);
-            updateCart(cartItems);
+            updateCart(cartItems, nombreContenedor);
         }
     }
 }
@@ -224,8 +224,10 @@ export async function removeItemFromCart(event) {
 }
 
 // Función para actualizar el carrito en la interfaz de usuario
-export function updateCart(cartItems) {
-    const cartDetails = document.getElementById('cartDetails');
+export function updateCart(cartItems, nombreContenedor) {
+    const cartDetails = document.getElementById(`${nombreContenedor}`);
+    console.log({nombreContenedor});
+    console.log(cartDetails);
     if (!cartDetails) return;
 
     cartDetails.innerHTML = '';
@@ -256,6 +258,44 @@ export function updateCart(cartItems) {
         });
     }
 }
+
+/*export function updateCart(cartItems, containerElement) {
+    console.log(containerElement);
+    if (!containerElement) return;
+    containerElement.innerHTML = '';
+    let totalAmount = 0;
+
+    cartItems.forEach((item, index) => {
+        totalAmount += item.price * item.quantity;
+        containerElement.innerHTML += `
+            <div class="flex flex-col items-center justify-center w-full max-h-80">
+                <div>
+                    <img src="${item.imagen}" alt="${item.name}" class="w-8 h-8">
+                    <p>${item.name} - $${item.price} MXN x ${item.quantity}</p>
+                    <button class="btn variant-ringed-primary btn-sm removeButton" data-index="${index}">Eliminar Producto</button>
+                    <hr/>
+                </div>
+            </div>
+        `;
+    });
+
+    const totalAmountElement = document.getElementById('totalAmount');
+    if (totalAmountElement) {
+        totalAmountElement.innerText = `Total: $${totalAmount.toFixed(2)} MXN`;
+
+        // Agregar event listener para los botones de eliminar
+        const removeButtons = containerElement.querySelectorAll('.removeButton');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', removeItemFromCart); // Llama a la función removeItemFromCart
+        });
+    }
+}*/
+
+// Ejemplo de uso:
+// updateCart(cartItems, document.getElementById('cartDetails'));
+
+
+
 
 // Función para crear un usuario y su carrito en Firestore
 export async function createUser(email, password, firstName, lastName) {

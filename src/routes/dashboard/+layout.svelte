@@ -20,7 +20,8 @@
 	//Mostrar informacion del Usuario
 	function toggleCartInfo() {
 		showCartInfo = !showCartInfo;
-		toggleCart(cartItems);
+		const name = "cartDetails";
+		toggleCart(cartItems, name);
 	}
 
 	async function purchase(){
@@ -55,27 +56,29 @@
 				</svelte:fragment>
 
 				<svelte:fragment>
-					<div class=" w-full flex flex-row items-center justify-center">
+					<div class="w-full flex flex-row items-center justify-center">
+						<div class="gap-x-4">
 						<a
-							class="btn !bg-transparent text-surface-600 underline hover:bg-slate-300"
+							class="btn variant-filled-primary hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/productos">Explorar</a
 						>
 						<a
-							class="btn !bg-transparent text-surface-600 underline hover:bg-slate-300"
+							class="btn variant-filled-primary hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/historial">Historial</a
 						>
 						<a
-							class="btn bg-transparent text-surface-600 underline hover:bg-slate-300"
+							class="btn variant-filled-primary hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
-							href="/dashboard/contactanos">Contactanos</a
+							href="/dashboard/contactanos">Contactános</a
 						>
 						<a
-							class="btn bg-transparent text-surface-600 underline hover:bg-slate-300"
+							class="btn variant-filled-primary hover:bg-slate-300"
 							data-sveltekit-preload-data="hover"
-							href="/dashboard/configuracion">Configuracion</a
+							href="/dashboard/configuracion">Configuración</a
 						>
+						</div>
 					</div>
 				</svelte:fragment>
 
@@ -83,7 +86,7 @@
 					<!--- Admin en caso de que el perfil sea admin -->
 					{#if admin === true}
 						<a
-							class="btn variant-filled-primary underline"
+							class="btn variant-filled-primary"
 							data-sveltekit-preload-data="hover"
 							href="/dashboard/administrador">Admin</a
 						>
@@ -117,6 +120,9 @@
 									<span id="totalAmount">Total:</span>
 									<button class="btn variant-filled-primary text-white" on:click={purchase}>Comprar</button>
 								</div>
+									<a href="/dashboard/carrito">
+										<button class="w-full btn-sm hover:bg-slate-300 rounded-md">Ver detalles</button>
+									</a>
 							</div>
 						{/if}
 					</div>
