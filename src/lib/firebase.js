@@ -6,6 +6,48 @@ import { collection, getDocs, getFirestore, query, where, doc, getDoc, setDoc, u
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Swal from "sweetalert2";
 
+export async function actualizarCarrito(cartItems) {
+    const detalles = document.getElementById("detalles");
+    if (!detalles) return;
+
+    console.log("Nuevos cart items: ", cartItems);
+
+    detalles.innerHTML = '';
+    let totalAmount = 0;
+    cartItems.forEach((item, index) => {
+        totalAmount += item.price * item.quantity;
+        console.log(totalAmount);
+        detalles.innerHTML += `
+        <div class="flex flex-col items-center">
+            <div class="w-1/2 mt-6">
+                <div class="flex items-center mb-4 pb-4 border-b border-gray-300">
+                <img src="${item.imagen}" alt="${item.name}" class="w-24 h-24 object-cover mr-4 ml-8" />
+                <div class="flex flex-col">
+                    <div class="text-lg font-bold mb-2">${item.name}</div>
+                    <div class="text-base mb-1">Cantidad: ${item.quantity}</div>
+                    <div class="text-base">Precio: $${item.price}</div>
+                    <button class="block ml-72 btn variant-ringed-primary btn-sm removeButton" data-index="${index}">Eliminar Producto</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    const totalAmountElement = document.getElementById('total');
+        if (totalAmountElement) {
+            totalAmountElement.innerText = `Total: $${totalAmount.toFixed(2)} MXN`;
+
+            // Agregar event listener para los botones de eliminar
+            const removeButtons = document.querySelectorAll('.removeButton');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', async (event) => {
+                await removeItemFromCart(event); // Llama a la función removeItemFromCart
+                });
+            });
+        }
+}
+
 const firebaseConfig = {
     apiKey: "AIzaSyDvyv29HOhO1u_VJ11UTgidUghAq7n_vJU",
     authDomain: "e-commerce-53447.firebaseapp.com",
@@ -208,6 +250,8 @@ export async function removeItemFromCart(event) {
                         confirmButtonText: 'OK'
                     });
                     await updateDoc(cartRef, { products: updatedProducts });
+                    actualizarCarrito(updatedProducts);
+                    toggleCart(updatedProducts, "cartDetails");
                 }
             }
         }
@@ -226,7 +270,6 @@ export async function removeItemFromCart(event) {
 // Función para actualizar el carrito en la interfaz de usuario
 export function updateCart(cartItems, nombreContenedor) {
     const cartDetails = document.getElementById(`${nombreContenedor}`);
-    console.log({nombreContenedor});
     console.log(cartDetails);
     if (!cartDetails) return;
 
@@ -236,15 +279,20 @@ export function updateCart(cartItems, nombreContenedor) {
     cartItems.forEach((item, index) => {
         totalAmount += item.price * item.quantity;
         cartDetails.innerHTML += `
-        <div class="flex flex-col items-center justify-center w-full max-h-80">
-        <div>
-            <img src="${item.imagen}" alt="${item.name}" class="w-8 h-8">
-            <p>${item.name} - $${item.price} MXN x ${item.quantity}</p>
-            <button class="btn variant-ringed-primary btn-sm removeButton" data-index="${index}">Eliminar Producto</button>
-            <hr/>
-        </div>
-    </div>
-        `;
+        <div class="flex flex-col items-center max-h-40">
+                <div class="w-full mt-6">
+                    <div class="flex items-center mb-4 pb-4 border-b border-gray-300">
+                    <img src="${item.imagen}" alt="${item.name}" class="w-16 h-16 object-cover mr-4 ml-4" />
+                    <div class="flex flex-col">
+                        <div class="text-lg font-bold mb-2">${item.name}</div>
+                        <div class="text-base mb-1">Cantidad: ${item.quantity}</div>
+                        <div class="text-base">Precio: $${item.price}</div>
+                        <button class="block ml-8 btn variant-ringed-primary btn-sm removeButton" data-index="${index}">Eliminar Producto</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            `;
     });
 
     const totalAmountElement = document.getElementById('totalAmount');
@@ -258,44 +306,6 @@ export function updateCart(cartItems, nombreContenedor) {
         });
     }
 }
-
-/*export function updateCart(cartItems, containerElement) {
-    console.log(containerElement);
-    if (!containerElement) return;
-    containerElement.innerHTML = '';
-    let totalAmount = 0;
-
-    cartItems.forEach((item, index) => {
-        totalAmount += item.price * item.quantity;
-        containerElement.innerHTML += `
-            <div class="flex flex-col items-center justify-center w-full max-h-80">
-                <div>
-                    <img src="${item.imagen}" alt="${item.name}" class="w-8 h-8">
-                    <p>${item.name} - $${item.price} MXN x ${item.quantity}</p>
-                    <button class="btn variant-ringed-primary btn-sm removeButton" data-index="${index}">Eliminar Producto</button>
-                    <hr/>
-                </div>
-            </div>
-        `;
-    });
-
-    const totalAmountElement = document.getElementById('totalAmount');
-    if (totalAmountElement) {
-        totalAmountElement.innerText = `Total: $${totalAmount.toFixed(2)} MXN`;
-
-        // Agregar event listener para los botones de eliminar
-        const removeButtons = containerElement.querySelectorAll('.removeButton');
-        removeButtons.forEach(button => {
-            button.addEventListener('click', removeItemFromCart); // Llama a la función removeItemFromCart
-        });
-    }
-}*/
-
-// Ejemplo de uso:
-// updateCart(cartItems, document.getElementById('cartDetails'));
-
-
-
 
 // Función para crear un usuario y su carrito en Firestore
 export async function createUser(email, password, firstName, lastName) {
